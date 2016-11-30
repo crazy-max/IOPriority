@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -36,7 +37,24 @@ namespace IOPriority
                 return false;
             }
 
-            pid = int.Parse(args[0]);
+            try
+            {
+                pid = int.Parse(args[0]);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("That is too ugly to be a PID, hopefully its a process name.");
+                Process[] processes = Process.GetProcessesByName(args[0]);
+                if (processes != null && processes.Length != 0)
+                {
+                    pid = processes[0].Id;
+                }
+                else
+                {
+                    throw new Exception("No process found with that name: " + args[0]);
+                }
+
+            }
             ioPrio = uint.Parse(args[1]);
 
             return true;
@@ -44,7 +62,7 @@ namespace IOPriority
 
         private static void printUsage()
         {
-            Console.WriteLine("You suck! I need 2 params, hehe: pid and prio(0,1,2)");
+            Console.WriteLine("You suck! I need 2 params, hehe: pid(or process name) and prio(0,1,2)");
         }
 
         unsafe static void setIOPrio(int hProcess, uint newPrio)
